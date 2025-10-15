@@ -1,0 +1,91 @@
+---
+title: "github-intro-exercise"
+author: "Eliana Paradise"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(palmerpenguins)
+library(tidyverse)
+library(rmarkdown)
+library(ggthemes)
+library(ggdark)
+library(viridis)
+library(plotly)
+library(RColorBrewer)
+```
+
+```{r}
+packageLoad <-
+  function(x) {
+    for (i in 1:length(x)) {
+      if (!x[i] %in% installed.packages()) {
+        install.packages(x[i])
+      }
+      library(x[i], character.only = TRUE)
+    }
+  }
+
+packages <- c('tidyverse',
+              'palmerpenguins',
+              'lterdatasampler')
+
+packageLoad(packages)
+```
+
+
+```{r}
+data("knz_bison")
+head(knz_bison)
+```
+
+Create a new column in the bison dataset that calculates the individual’s age at the time of observation.
+```{r}
+# Convert obs_date to Date format if needed
+knz_bison <- knz_bison %>%
+  mutate(rec_year = year(rec_year),
+         age_at_obs = animal_yob - rec_year)
+
+head(knz_bison[, c("animal_yob", "rec_year")])
+
+```
+
+
+Write a function that will first filter the bison dataset based on any user-specified weight threshold (returning the filtered dataset).
+```{r}
+filter_by_weight <- function(data, threshold) {
+  filtered <- data %>% filter(animal_weight >= threshold)
+  return(filtered)
+}
+
+# Example filtering "heavy bison" by excluding those who weigh less than 500 kg
+heavy_bison <- filter_by_weight(knz_bison, 500)
+head(heavy_bison)
+
+```
+
+
+Create a boxplot showing weight distribution between male and female bison, and then conduct a t-test to see if weight is significantly difference between males and females.
+
+Because of the very small p-value, the weight distribution between males and females is statistically significant. 
+
+```{r}
+# Boxplot
+ggplot(knz_bison, aes(x = animal_sex, y = animal_weight, fill = animal_sex)) +
+  geom_boxplot() +
+  labs(title = "Weight Distribution by Sex", x = "Sex", y = "Weight (kg)") +
+  theme_minimal()
+
+# T-test
+t_test_result <- t.test(animal_weight ~ animal_sex, data = knz_bison)
+t_test_result
+
+```
+
+
